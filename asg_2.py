@@ -43,7 +43,7 @@ This function returns a numpy array with origin at the center of the image
 '''
 
 
-def returnImageCenteredArray(image_shape):
+def returnImageCenteredPixelLocationArray(image_shape):
     n_rows = image_shape[0]
     n_cols = image_shape[1]
     return np.asarray([[i, j] for i in range((-n_rows) // 2 + 1, n_rows // 2 + 1) for j in
@@ -58,7 +58,7 @@ Note: We will have to change N for x and y if rows and columns are different
 '''
 
 
-def remap_to_original_coord(pixel_coord, n_rows, n_cols):
+def remapToOriginalCoord(pixel_coord, n_rows, n_cols):
     new_pixel_coord = np.zeros([1, 2])
     new_pixel_coord[0, 0] = pixel_coord[0, 0] + (n_rows // 2) - 1
     new_pixel_coord[0, 1] = pixel_coord[0, 1] + (n_cols // 2) - 1
@@ -78,10 +78,8 @@ degree_to_radian = lambda degree_val: (degree_val / 180) * np.pi
 n_rows = source_img.shape[0]
 n_cols = source_img.shape[1]
 
-target_pixel_location_array = returnImageCenteredArray(source_img.shape)
+target_pixel_location_array = returnImageCenteredPixelLocationArray(source_img.shape)
 
-# target_pixel_location_array = np.asarray([[i, j] for i in range((-n_rows) // 2 + 1, n_rows // 2 + 1) for j in
-#                                           range((-n_cols) // 2 + 1, n_cols // 2 + 1)])
 
 rotation_matrix = np.array([[np.cos(degree_to_radian(theta_degree)), -np.sin(degree_to_radian(theta_degree))],
                             [np.sin(degree_to_radian(theta_degree)), np.cos(degree_to_radian(theta_degree))]])
@@ -94,11 +92,11 @@ target_image = np.zeros([n_rows, n_cols])
 
 for index, target_pixel_location in enumerate(target_pixel_location_array):
     mapped_source_pixel_location = np.matmul(rotation_matrix_inverse, np.asarray([target_pixel_location]).T)
-    mapped_target_pixel_location = remap_to_original_coord(np.asarray([target_pixel_location]), n_rows, n_cols)
+    mapped_target_pixel_location = remapToOriginalCoord(np.asarray([target_pixel_location]), n_rows, n_cols)
     mapped_intensity_val = bilinearTransform(
-        SourcePixel(remap_to_original_coord(mapped_source_pixel_location.T, n_rows, n_cols)[0],
+        SourcePixel(remapToOriginalCoord(mapped_source_pixel_location.T, n_rows, n_cols)[0],
                     source_img))
     target_image[
         int(mapped_target_pixel_location[0, 0]), int(mapped_target_pixel_location[0, 1])] = mapped_intensity_val
 
-cv2.imwrite('lena_translated.png', target_image)
+cv2.imwrite('pisa_rotated.png', target_image)

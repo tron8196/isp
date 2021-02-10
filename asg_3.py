@@ -67,7 +67,10 @@ source_img = cv2.imread('cells_scale.png', 0)
 This code scales any given image by the scaling factor. the scaling is performed w.r.t the center of the image
 '''
 
-scale_factor = 2
+# scale_factor = 2
+scale_factor = 0.7
+
+
 scaling_matrix = np.array([[scale_factor, 0],[0, scale_factor]])
 scaling_matrix_inverse = np.linalg.inv(scaling_matrix)
 
