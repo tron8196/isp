@@ -12,10 +12,10 @@ def bilinearTransform(sourcePixelObj: SourcePixel):
     pixel_row_pos = sourcePixelObj.mappedSourceLocation[0]
     pixel_col_pos = sourcePixelObj.mappedSourceLocation[1]
     if (not ((0 <= int(pixel_row_pos) < sourcePixelObj.sourceImage.shape[0]) and
-             (0 <= int(pixel_col_pos) < sourcePixelObj.sourceImage.shape[1]))):
+         (0 <= int(pixel_col_pos) < sourcePixelObj.sourceImage.shape[1]))):
         return 0
-    bounding_row_val = int(pixel_row_pos)
-    bounding_col_val = int(pixel_col_pos)
+    bounding_row_val = int(np.floor(pixel_row_pos))
+    bounding_col_val = int(np.floor(pixel_col_pos))
     a = pixel_row_pos - bounding_row_val
     b = pixel_col_pos - bounding_col_val
 
@@ -36,14 +36,12 @@ def returnPixelLocationArray(image_shape):
     return np.asarray([[i, j] for i in range(0, n_rows) for j in range(0, n_cols)])
 
 
-source_img = cv2.imread('lena_translate.png', 0)
+source_img = cv2.imread('pisa_rotated.png', 0)
 
 target_pixel_location_array = returnPixelLocationArray(source_img.shape)
-# print(target_pixel_location_array)
 
-
-t_x = 3.75
-t_y = 4.3
+t_x = 5.84
+t_y = 155
 
 translate_matrix = np.array([[t_x], [t_y]])
 

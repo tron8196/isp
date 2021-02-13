@@ -1,6 +1,11 @@
 import numpy as np
 import cv2
 
+scale_factor = 1.3
+
+# scale_factor = 0.8
+source_img = cv2.imread('cells_scale.png', 0)
+
 
 class SourcePixel:
     def __init__(self, mappedSourceLocation, sourceImage):
@@ -14,8 +19,8 @@ def bilinearTransform(sourcePixelObj: SourcePixel):
     if (not ((0 <= int(pixel_row_pos) < sourcePixelObj.sourceImage.shape[0]) and
              (0 <= int(pixel_col_pos) < sourcePixelObj.sourceImage.shape[1]))):
         return 0
-    bounding_row_val = int(pixel_row_pos)
-    bounding_col_val = int(pixel_col_pos)
+    bounding_row_val = int(np.floor(pixel_row_pos))
+    bounding_col_val = int(np.floor(pixel_col_pos))
     a = pixel_row_pos - bounding_row_val
     b = pixel_col_pos - bounding_col_val
 
@@ -61,26 +66,17 @@ def remap_to_original_coord(pixel_coord, n_rows, n_cols):
 Code Begins from here, commented wherever required
 '''
 
-source_img = cv2.imread('cells_scale.png', 0)
-
 '''
 This code scales any given image by the scaling factor. the scaling is performed w.r.t the center of the image
 '''
 
-# scale_factor = 2
-scale_factor = 0.7
-
-
-scaling_matrix = np.array([[scale_factor, 0],[0, scale_factor]])
+scaling_matrix = np.array([[scale_factor, 0], [0, scale_factor]])
 scaling_matrix_inverse = np.linalg.inv(scaling_matrix)
 
 target_pixel_location_array = returnImageCenteredArray(source_img.shape)
 
 n_rows = source_img.shape[0]
 n_cols = source_img.shape[1]
-
-
-mapped_source_pixel_location_array = np.zeros(target_pixel_location_array.shape)
 
 target_image = np.zeros([n_rows, n_cols])
 
@@ -94,5 +90,3 @@ for index, target_pixel_location in enumerate(target_pixel_location_array):
         int(mapped_target_pixel_location[0, 0]), int(mapped_target_pixel_location[0, 1])] = mapped_intensity_val
 
 cv2.imwrite('cells_scaled.png', target_image)
-
-

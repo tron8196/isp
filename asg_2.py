@@ -20,10 +20,10 @@ def bilinearTransform(sourcePixelObj: SourcePixel):
     pixel_row_pos = sourcePixelObj.mappedSourceLocation[0]
     pixel_col_pos = sourcePixelObj.mappedSourceLocation[1]
     if (not ((0 <= int(pixel_row_pos) < sourcePixelObj.sourceImage.shape[0]) and
-             (0 <= int(pixel_col_pos) < sourcePixelObj.sourceImage.shape[1]))):
+         (0 <= int(pixel_col_pos) < sourcePixelObj.sourceImage.shape[1]))):
         return 0
-    bounding_row_val = int(pixel_row_pos)
-    bounding_col_val = int(pixel_col_pos)
+    bounding_row_val = int(np.floor(pixel_row_pos))
+    bounding_col_val = int(np.floor(pixel_col_pos))
     a = pixel_row_pos - bounding_row_val
     b = pixel_col_pos - bounding_col_val
 
@@ -50,7 +50,7 @@ def returnImageCenteredPixelLocationArray(image_shape):
                        range((-n_cols) // 2 + 1, n_cols // 2 + 1)])
 
 
-''''
+'''
 To form the pixel location matrix w.r.t the center of image for a given pixel location in X direction in the original
 space say x we do the following x' = (x - N/2 + 1) to get the pixel locations with the origin being at the image center.
 To go back to the original pixel locations with a given x = x' + N/2 -1.
@@ -69,10 +69,10 @@ def remapToOriginalCoord(pixel_coord, n_rows, n_cols):
 Code Begins from here, commented wherever required
 '''
 
-source_img = cv2.imread('pisa_rotate.png', 0)
+source_img = cv2.imread('IMG1.png', 0)
 
 # Data available on the net for degree of tilt of the leaning tower of Pisa
-theta_degree = 5
+theta_degree = -30
 degree_to_radian = lambda degree_val: (degree_val / 180) * np.pi
 
 n_rows = source_img.shape[0]
@@ -85,8 +85,6 @@ rotation_matrix = np.array([[np.cos(degree_to_radian(theta_degree)), -np.sin(deg
                             [np.sin(degree_to_radian(theta_degree)), np.cos(degree_to_radian(theta_degree))]])
 
 rotation_matrix_inverse = np.linalg.inv(rotation_matrix)
-
-mapped_source_pixel_location_array = np.zeros(target_pixel_location_array.shape)
 
 target_image = np.zeros([n_rows, n_cols])
 
