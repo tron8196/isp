@@ -11,8 +11,8 @@ class SourcePixel:
 '''
 @@Bilinear Transform Method
 Given mapped source pixel location the function returns interpolated pixel intensities averaging over the 
-nearest pixel locations, note for easier code, boundary pixels have been mapped to 0, ideally based on the boundary,
-pixel_location + 1 or -1 factor will vary
+nearest pixel locations, note for easier code, boundary pixels have been mapped to 0. Based on boundary location
++1 or -1 factor has been chosen to calculate the neighbourhood.
 '''
 
 
@@ -69,10 +69,10 @@ def remapToOriginalCoord(pixel_coord, n_rows, n_cols):
 Code Begins from here, commented wherever required
 '''
 
-source_img = cv2.imread('IMG1.png', 0)
+source_img = cv2.imread('pisa_rotate.png', 0)
 
 # Data available on the net for degree of tilt of the leaning tower of Pisa
-theta_degree = -30
+theta_degree = 5.5
 degree_to_radian = lambda degree_val: (degree_val / 180) * np.pi
 
 n_rows = source_img.shape[0]
@@ -81,12 +81,26 @@ n_cols = source_img.shape[1]
 target_pixel_location_array = returnImageCenteredPixelLocationArray(source_img.shape)
 
 
+
+'''
+Setting up the matrix which will provide the anti-clockwise rotation required for correcting the tower of pisa's tilt. 
+'''
+
+
 rotation_matrix = np.array([[np.cos(degree_to_radian(theta_degree)), -np.sin(degree_to_radian(theta_degree))],
                             [np.sin(degree_to_radian(theta_degree)), np.cos(degree_to_radian(theta_degree))]])
 
 rotation_matrix_inverse = np.linalg.inv(rotation_matrix)
 
 target_image = np.zeros([n_rows, n_cols])
+
+
+'''
+This piece of code, takes each pixel location from the target image, note here the pixel locations are centered at the
+image center and based on the geometric transform applied calculates the corresponding source co-ordinates, 
+these source co-ordinates are then used to find the accurate pixel intensities for the location using  bilinear 
+interpolation of the neighbourhood pixels.
+'''
 
 for index, target_pixel_location in enumerate(target_pixel_location_array):
     mapped_source_pixel_location = np.matmul(rotation_matrix_inverse, np.asarray([target_pixel_location]).T)

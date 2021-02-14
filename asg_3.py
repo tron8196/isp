@@ -1,9 +1,16 @@
 import numpy as np
 import cv2
 
-scale_factor = 1.3
 
+'''
+The scaling factor can be toggled here, setting it >1 will result in zoom-in effect and zoom out for z<1.
+'''
+
+
+scale_factor = 1.3
 # scale_factor = 0.8
+
+
 source_img = cv2.imread('cells_scale.png', 0)
 
 
@@ -79,6 +86,14 @@ n_rows = source_img.shape[0]
 n_cols = source_img.shape[1]
 
 target_image = np.zeros([n_rows, n_cols])
+
+
+'''
+This piece of code, takes each pixel location from the target image, note here the pixel locations are centered at the
+image center and based on the geometric transform applied calculates the corresponding source co-ordinates, 
+these source co-ordinates are then used to find the accurate pixel intensities for the location using  bilinear 
+interpolation of the neighbourhood pixels.
+'''
 
 for index, target_pixel_location in enumerate(target_pixel_location_array):
     mapped_source_pixel_location = np.matmul(scaling_matrix_inverse, np.asarray([target_pixel_location]).T)
