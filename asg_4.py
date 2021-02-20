@@ -1,6 +1,5 @@
 import numpy as np
 import cv2
-import time
 
 '''
 Matches a given source images shape to the shape of the target image, assumption:- Target image shape > source image.
@@ -119,8 +118,8 @@ target_image = np.apply_along_axis(bilinearTransform, 1, source_pixel_location_a
 cv2.imwrite('transformed_source.png', target_image)
 
 '''
-Now since we have manipulated IMG1 w.r.t the rotation and translation and now since the tow images correspond 
-to the same view point a simple differnce will let us know if anythig has changed in the scene
+Now since we have manipulated IMG1 w.r.t the rotation and translation and now since the two images correspond 
+to the same view point a simple difference will let us know if anything has changed in the scene
 '''
 diff_image = np.abs(target_img - target_image)
 cv2.imwrite('source_target_diff.png', diff_image)
