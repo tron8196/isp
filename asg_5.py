@@ -51,9 +51,6 @@ Selects random 4-point correspondences and returns the A matrix used to calculat
 
 
 def generateAMatrix(source_point_list, target_point_list):
-    print(source_point_list)
-    print()
-    print(target_point_list)
     random_index_list = [rnd.randint(0, source_point_list.shape[0] - 1) for i in range(4)]
     A_matrix = np.zeros([8, 9])
 
@@ -81,8 +78,6 @@ def testHomography(distance_threshold, random_index_list, source_features, targe
         if index in random_index_list:
             pass
         else:
-            # source_homogeneous_point = np.ones([1,3])
-            print(np.array([source_target_feature_point[0]]))
             source_homogeneous_point = np.hstack((np.array([source_target_feature_point[0]]), np.array([[1]])))
             predicted_target_homogeneous_point = np.matmul(test_homography_matrix, source_homogeneous_point.T)
             predicted_target_homogeneous_point = predicted_target_homogeneous_point / \
@@ -92,12 +87,16 @@ def testHomography(distance_threshold, random_index_list, source_features, targe
             euclid_norm = np.linalg.norm(target_actual - target_predicted)
             if euclid_norm <= distance_threshold:
                 count = count + 1
-    return count / total_test_points * 100 >= 80, count / total_test_points
+    return count / total_test_points * 100 >= 95, count / total_test_points
 
 
-def siftFeatureMatchMatlab():
-    src = open('source_features.txt', 'r')
-    trg = open('target_features.txt', 'r')
+def siftFeatureMatchMatlab(correspondanceBetweenFlag):
+
+    source_feature_file_name = 'source_features_' + correspondanceBetweenFlag + '.txt'
+    target_feature_file_name = 'target_features_' + correspondanceBetweenFlag + '.txt'
+
+    src = open(source_feature_file_name, 'r')
+    trg = open(target_feature_file_name, 'r')
 
     src = src.readlines()
     trg = trg.readlines()
@@ -107,12 +106,11 @@ def siftFeatureMatchMatlab():
 
     trg_features = [i.strip().split() for i in trg]
     trg_features = np.array([[float(location[0]), float(location[1])] for location in trg_features])
-    print(src_features, trg_features)
-    return trg_features, src_features
+    return src_features, trg_features
 
 
-def getHomographyMatrix(source_image, target_image, MAX_ITERATIONS=100):
-    source_features, target_features = siftFeatureMatchMatlab()
+def getHomographyMatrix(source_image, target_image, correspondanceBetweenFlag, MAX_ITERATIONS=100):
+    source_features, target_features = siftFeatureMatchMatlab(correspondanceBetweenFlag)
     iterations = 0
     while iterations <= MAX_ITERATIONS:
         test_A_matrix, random_index_list = generateAMatrix(source_features, target_features)
@@ -123,23 +121,6 @@ def getHomographyMatrix(source_image, target_image, MAX_ITERATIONS=100):
         if is_valid_homography:
             break
         MAX_ITERATIONS = MAX_ITERATIONS + 1
-    for point in list(source_features.astype(int)[np.array([random_index_list])][0]):
-        print(point)
-        image_a = cv2.circle(source_image, tuple(point), 0, 0, 5)
-        point = np.array([[point[0], point[1], 1]])
-        point_source = np.matmul(test_homography_matrix, point.T).T
-
-        point_source = point_source / np.array(point_source[:, 2])
-        print(point_source)
-
-    print()
-    cv2.imwrite('source_feature_match_random.png', image_a)
-
-    for point in list(target_features.astype(int)[np.array([random_index_list])][0]):
-        print(point)
-
-        image_b = cv2.circle(target_image, tuple(point), 0, 0, 5)
-    cv2.imwrite('target_feature_match_random.png', image_b)
     return test_homography_matrix
 
 
@@ -152,7 +133,7 @@ def blendValues(intensity_from_img_1, intensity_from_img_2, intensity_from_img_3
         else:
             return (intensity_from_img_1 + intensity_from_img_3) // 2
     else:
-        return int(0.6 * intensity_from_img_2 + 0.4 * (intensity_from_img_1 + intensity_from_img_3))
+        return intensity_from_img_2
 
 
 #
@@ -160,10 +141,9 @@ img1 = cv2.imread('img1.png', 0)
 img2 = cv2.imread('img2.png', 0)
 img3 = cv2.imread('img3.png', 0)
 
-homography_matrix_2_1 = getHomographyMatrix(img2, img1)
-# homography_matrix_2_3 = getHomographyMatrix(img2, img3)
+homography_matrix_2_1 = getHomographyMatrix(img2, img1, '12')
+homography_matrix_2_3 = getHomographyMatrix(img2, img3, '23')
 homography_matrix_2_2 = np.identity(3)
-print(homography_matrix_2_1)
 
 canvas_rows = int(img2.shape[0] * 2)
 canvas_cols = int(img2.shape[1] * 2)
@@ -186,10 +166,8 @@ for row_index in range(canvas_rows):
         img2_location = img2_location / np.array([img2_location[:, 2]]).T
         intensity_from_img_2 = bilinearTransform(img2_location[0], img2)
 
-        # img3_location = np.matmul(homography_matrix_2_3, current_pixel_location.T).T
-        # img3_location = img3_location / np.array([img3_location[:, 2]]).T
-        # intensity_from_img_3 = bilinearTransform(img3_location[0], img3)
-        intensity_from_img_3 = 0
+        img3_location = np.matmul(homography_matrix_2_3, current_pixel_location.T).T
+        img3_location = img3_location / np.array([img3_location[:, 2]]).T
+        intensity_from_img_3 = bilinearTransform(img3_location[0], img3)
         canvas_img[row_index, col_index] = blendValues(intensity_from_img_1, intensity_from_img_2, intensity_from_img_3)
 cv2.imwrite('canvas.png', canvas_img)
-# #
