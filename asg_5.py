@@ -8,9 +8,7 @@ from scipy.linalg import null_space
 
 class FourPointFeature:
     def __init__(self, random_index_list, consensus_val, test_homography_matrix):
-        """
-        :type random_index_list: list
-        """
+
         self.test_homography_matrix = test_homography_matrix
         self.consensus_val = consensus_val
         self.random_index_list = random_index_list
@@ -156,15 +154,24 @@ def blendValues(intensity_from_img_1, intensity_from_img_2, intensity_from_img_3
         return intensity_from_img_2
 
 
-#
+#Read the images
 img1 = cv2.imread('img1.png', 0)
 img2 = cv2.imread('img2.png', 0)
 img3 = cv2.imread('img3.png', 0)
 
-homography_matrix_2_1 = getHomographyMatrix(img2, img1, '12')
-homography_matrix_2_3 = getHomographyMatrix(img2, img3, '23')
+'''
+Generate homography matrix, with source img2 and target img1 and 3
+The third argument of the function is the value that the function then appends to source_features to get the
+source_features and target feature list.
+
+eg: '12_lab' - > the program will search for file source_features_12_lab.txt in the program directory
+for source features
+'''
+homography_matrix_2_1 = getHomographyMatrix(img2, img1, '12_lab')
+homography_matrix_2_3 = getHomographyMatrix(img2, img3, '23_lab')
 homography_matrix_2_2 = np.identity(3)
 
+#Setting up canvas image with double the size of img2 to accomodate panorama
 canvas_rows = int(img2.shape[0] * 2)
 canvas_cols = int(img2.shape[1] * 2)
 
@@ -173,7 +180,7 @@ canvas_cols = int(img2.shape[1] * 2)
 '''
 The below code is a python version of the algorithm given in the lab document, for each pixel location in the canvas
 based on the 2 homography, it finds which points from img1, 2 and 3 fall there and blends them together
-
+Also an offset is set such that we get a broader view of the scene
 '''
 
 canvas_img = np.zeros([canvas_rows, canvas_cols])
@@ -184,6 +191,7 @@ canvas_pixel_location_homogeneous_array = np.hstack(
 row_offset = img2.shape[0] // 2
 col_offset = img2.shape[1] // 2
 for row_index in range(canvas_rows):
+    print(row_index)
     for col_index in range(canvas_cols):
         current_pixel_location = np.array([[row_index - row_offset, col_index - col_offset, 1]])
 
