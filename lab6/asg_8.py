@@ -1,6 +1,5 @@
 import scipy.io
 import numpy as np
-import cv2
 import matplotlib.pyplot as plt
 
 # y=image_maximums, specific to what's being asked from the function, x current location
@@ -150,67 +149,14 @@ n_rows, n_cols = gauss_depth_map.shape
 x = range(n_rows)
 y = range(n_cols)
 
-
 X, Y = np.meshgrid(x, y)  # `plot_surface` expects `x` and `y` data to be 2D
 hf = plt.figure()
+print(X)
 
 ha = hf.add_subplot(121, projection='3d')
 ha.plot_surface(X, Y, gauss_depth_map)
 
-
 ha_2 = hf.add_subplot(122, projection='3d')
 ha_2.plot_surface(X, Y, coarse_depth_map)
 
-
 plt.show()
-
-# a.loadFrameArray('stack.mat')
-# a.loadMLArray()
-# a.getSML()
-
-
-# f = getFrameArray('stack.mat')
-#
-# # f = np.random.randint(0,255, (5,5,2))
-# print(f)
-# ml_array = getML(f)
-# print(ml_array)
-# sml_array = getSML(ml_array, 0)
-#
-# y = sml_array[2, 1, :]
-# delta_d = 40
-# x = np.linspace(1, 100*40, 100)
-# print(x)
-# fig, ax = plt.subplots(1)
-# ax.plot(x, y, 'bo')
-# plt.show()
-# # print()
-
-
-# print(np.max(sml_array)=-)
-# print(np.min(sml_array))
-
-
-# img = np.max(sml_array, axis=2)
-# depth_map = (img/np.max(img))*255
-
-# print('min', np.min(depth_map))
-#
-# print('max', np.max(depth_map))
-#
-# np.savetxt('depth_map.txt', depth_map.astype(int))
-# cv2.imwrite('depth.png', depth_map.astype(np.uint8))
-#
-# n_rows, n_cols, num_frames = sml_array.shape
-#
-# nx, ny = 256, 1024
-# x = range(n_rows)
-# y = range(n_cols)
-#
-# hf = plt.figure()
-# ha = hf.add_subplot(111, projection='3d')
-#
-# X, Y = np.meshgrid(x, y)  # `plot_surface` expects `x` and `y` data to be 2D
-# ha.plot_surface(X, Y, depth_map)
-#
-# plt.show()
