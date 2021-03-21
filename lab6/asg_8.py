@@ -26,6 +26,9 @@ class ShapeFromFocus:
         self.neighbourhood = neighbourhood
         self.delta_d = delta_d
 
+    '''
+    This functions loads the data from the .mat file and stores it in 3D array
+    '''
     def loadFrameArray(self, matFilePath):
         mat = scipy.io.loadmat(matFilePath)
         self.num_frames = mat['numframes'][0, 0]
@@ -36,6 +39,9 @@ class ShapeFromFocus:
             frame_var_str = frame_var_str + (3 - len(str(curr_frame_index))) * '0' + str(curr_frame_index)
             self.frame_array[:, :, curr_frame_index - 1] = mat[frame_var_str]
 
+    '''
+    Does the ML of adding absolute double derivatives in X and Y
+    '''
     def loadMLArray(self):
         frame_array = self.frame_array
         pixel_val_to_right_of_curr_location = np.zeros(frame_array.shape)
@@ -55,6 +61,9 @@ class ShapeFromFocus:
 
         self.ml_array = np.absolute(horizontal_diff) + np.absolute(vertical_diff)
 
+    '''
+    Returns Image window around the current pixel location as determined by the neighbourhood    
+    '''
     def getImageWindows(self, source_img, curr_row_index, curr_col_index, kernel_size):
         adaptive_kernel = np.zeros([kernel_size, kernel_size])
         half_kernel_size = kernel_size // 2
@@ -94,6 +103,9 @@ class ShapeFromFocus:
         # print(current_image_window)
         return current_image_window
 
+    '''
+    Uses the ML array to sum up values in the neighbourhood
+    '''
     def loadSMLArray(self):
         ml_array = self.ml_array
         self.sml_array = np.zeros(self.ml_array.shape)
@@ -104,21 +116,19 @@ class ShapeFromFocus:
                     region = self.getImageWindows(current_img, row_index, col_index, 2 * self.neighbourhood + 1)
                     self.sml_array[row_index, col_index, frame_index] = np.sum(region)
 
-    def getCoarseDepthMap(self, matFilePath):
-        self.loadFrameArray(matFilePath)
-        self.loadMLArray()
-        self.loadSMLArray()
-        print(self.sml_array.shape)
-        max_depth_array = (self.sml_array.argmax(axis=2) + 1) * self.delta_d
-        return max_depth_array
 
-
+    '''
+    Use the gaussian interpolation to calculate d_bar based on three values, m(maxima), m-1, and m+1
+    '''
     def get_d_bar(self, f_m, f_m_plus_one, f_m_minus_one, d_m, d_m_plus_one, d_m_minus_one):
         numerator = (np.log(f_m) - np.log(f_m_plus_one))*(d_m**2 - d_m_minus_one**2) - (np.log(f_m) - np.log(f_m_minus_one))*(d_m**2 - d_m_plus_one**2)
         denominator = 2 * self.delta_d * (2 * np.log(f_m) - np.log(f_m_plus_one) - np.log(f_m_minus_one))
 
         return np.round(numerator/denominator, 3)
 
+    '''
+    The main calling function
+    '''
     def getGaussianInterpolatedDepthMap(self, matFilePath):
         self.loadFrameArray(matFilePath)
         self.loadMLArray()
@@ -140,23 +150,27 @@ class ShapeFromFocus:
                 depth_map[curr_row, curr_col] = d_bar
         return depth_map
 
+
+'''
+Parameters
+delta_d - The value at which successive frames were captured
+neighbourhood - Size of the  neighbourhood to be taken into account to calculate the SML value at the pixel 
+'''
 a = ShapeFromFocus(50.50, neighbourhood=3)
 gauss_depth_map = a.getGaussianInterpolatedDepthMap('stack.mat')
-coarse_depth_map = a.getCoarseDepthMap('stack.mat')
 
 
+'''
+The below code plots a 3D surface once the depth is determined at every pixel location
+'''
 n_rows, n_cols = gauss_depth_map.shape
 x = range(n_rows)
 y = range(n_cols)
 
 X, Y = np.meshgrid(x, y)  # `plot_surface` expects `x` and `y` data to be 2D
 hf = plt.figure()
-print(X)
 
-ha = hf.add_subplot(121, projection='3d')
+ha = hf.add_subplot(111, projection='3d')
 ha.plot_surface(X, Y, gauss_depth_map)
-
-ha_2 = hf.add_subplot(122, projection='3d')
-ha_2.plot_surface(X, Y, coarse_depth_map)
 
 plt.show()
