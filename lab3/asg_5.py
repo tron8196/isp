@@ -162,10 +162,16 @@ def blendValues(intensity_from_img_1, intensity_from_img_2, intensity_from_img_3
         return intensity_from_img_2
 
 
-# Read the images
+# # Read the images, These are the Lab provided Images
 img1 = cv2.imread('img1.png', 0)
 img2 = cv2.imread('img2.png', 0)
 img3 = cv2.imread('img3.png', 0)
+
+
+# Read the images, These are the self captured Images
+# img1 = cv2.imread('1.png', 0)
+# img2 = cv2.imread('2.png', 0)
+# img3 = cv2.imread('3.png', 0)
 
 '''
 Generate homography matrix, with source img2 and target img1 and 3
@@ -173,13 +179,13 @@ The third argument of the function is the value that the function then appends t
 source_features and target feature list.
 
 eg: '12_lab' - > the program will search for file source_features_12_lab.txt in the program directory
-for source features
+for source features, change this to '12_real' and '23_real' for generating canvas image from self captured data
 '''
 homography_matrix_2_1 = getHomographyMatrix(img2, img1, '12_lab')
 homography_matrix_2_3 = getHomographyMatrix(img2, img3, '23_lab')
 homography_matrix_2_2 = np.identity(3)
 
-# Setting up canvas image with double the size of img2 to accomodate panorama
+# Setting up canvas image with double the size of img2 to accommodate panorama
 canvas_rows = int(img2.shape[0] * 2)
 canvas_cols = int(img2.shape[1] * 2)
 
